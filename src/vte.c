@@ -54,8 +54,6 @@
 #include "pty.h"
 #include "vteaccess.h"
 #include "vteint.h"
-#include "vtepty.h"
-#include "vtepty-private.h"
 #include "vteregex.h"
 #include "vtetc.h"
 

@@ -30,8 +30,6 @@
 
 #include <config.h>
 
-#include "vtepty.h"
-#include "vtepty-private.h"
 #include "vte.h"
 
 #include <sys/types.h>

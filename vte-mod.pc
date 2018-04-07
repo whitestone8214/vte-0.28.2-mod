@@ -1,0 +1,6 @@
+Name: VTE
+Description: Terminal widget for GTK+ 2.x
+Version: 0.28.2
+Requires: gtk+-x11-2.0 gio-unix-2.0 ncurses
+Libs: -lvte
+Cflags: 
