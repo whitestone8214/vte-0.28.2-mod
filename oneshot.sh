@@ -8,18 +8,17 @@
 
 
 _versionVte="0.28.2"
-_editionVte="2"
+_editionVte="3"
 _destinationVte="packages/vte/${_versionVte}-${_editionVte}"
 
 if (test "$1" = "build"); then
-	./configure --prefix=$2/${_destinationVte} --with-gtk=2.0 --disable-python || exit 1
+	#./configure --prefix=$2/${_destinationVte} --with-gtk=2.0 --disable-python || exit 1
 	#make V=1 > ../build.log
-	gcc $(pkg-config --cflags --libs gtk+-x11-2.0 gio-unix-2.0 ncurses) -I. -DLOCALEDIR='"/usr/share/locale"' -DTERMCAPDIR='"/etc/termcaps"' -DLIBEXECDIR='"/lib"' -Wno-deprecated-declarations -fPIC src/{caps,debug,iso2022,keymap,marshal,matcher,pty,reaper,ring,table,trie,vte,vteaccess,vtebg,vteconv,vtedraw,vteregex,vterowdata,vteseq,vtestream,vtetc,vtetree,vtetypebuiltins,vteunistr}.c -shared -o libvte.so || exit 1
-	gcc -Ignome-pty-helper -lutil gnome-pty-helper/gnome-{login-support,pty-helper,utmp}.c -o gnome-pty-helper.elf
+	gcc $(pkg-config --cflags --libs gtk+-x11-2.0 gio-unix-2.0 ncurses) -I. -Wno-deprecated-declarations -fPIC src/{caps,debug,iso2022,keymap,marshal,matcher,pty,reaper,ring,table,trie,vte,vteaccess,vtebg,vteconv,vtedraw,vteregex,vterowdata,vteseq,vtestream,vtetc,vtetree,vtetypebuiltins,vteunistr}.c -shared -o libvte.so || exit 1
+	gcc -Ignome-pty-helper -I. -lutil gnome-pty-helper/gnome-{login-support,pty-helper,utmp}.c -o gnome-pty-helper.elf
 elif (test "$1" = "install"); then
 	$0 uninstall || exit 1
 	
-	cd vte-${_versionVte}-mod
 	#make V=1 install > ../install.log
 	mkdir -p $2/${_destinationVte}/{includes,assets/{pkgconfig,termcaps}} || exit 1
 	cp -f libvte.so $2/${_destinationVte}
