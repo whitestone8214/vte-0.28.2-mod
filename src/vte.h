@@ -19,9 +19,9 @@
 #ifndef vte_vte_h_included
 #define vte_vte_h_included
 
-#include <glib.h>
+/*#include <glib.h>
 #include <gio/gio.h>
-#include <pango/pango.h>
+#include <pango/pango.h>*/
 #include <gtk/gtk.h>
 
 #define __VTE_VTE_H_INSIDE__ 1
@@ -52,6 +52,9 @@ G_BEGIN_DECLS
 #define VTE_IS_TERMINAL(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), VTE_TYPE_TERMINAL))
 #define VTE_IS_TERMINAL_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  VTE_TYPE_TERMINAL))
 #define VTE_TERMINAL_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  VTE_TYPE_TERMINAL, VteTerminalClass))
+
+#define VTE_META_MASK		GDK_META_MASK
+#define VTE_NUMLOCK_MASK	GDK_MOD2_MASK
 
 typedef struct _VteTerminal             VteTerminal;
 typedef struct _VteTerminalPrivate      VteTerminalPrivate;
@@ -518,6 +521,20 @@ gboolean vte_terminal_write_contents (VteTerminal *terminal,
 				      VteTerminalWriteFlags flags,
 				      GCancellable *cancellable,
 				      GError **error);
+
+/* Return TRUE if a keyval is just a modifier key. */
+gboolean _vte_keymap_key_is_modifier(guint keyval);
+
+/* Add modifiers to the sequence if they're needed. */
+void _vte_keymap_key_add_key_modifiers(guint keyval,
+				       GdkModifierType modifiers,
+				       gboolean sun_mode,
+				       gboolean hp_mode,
+				       gboolean legacy_mode,
+				       gboolean vt220_mode,
+				       gboolean app_cursor_keys,
+				       char **normal,
+				       gssize *normal_length);
 
 #undef _VTE_SEAL
 #undef _VTE_DEPRECATED

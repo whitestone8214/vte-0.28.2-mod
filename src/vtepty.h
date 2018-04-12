@@ -87,11 +87,9 @@ typedef struct _VtePtyClass   VtePtyClass;
 
 GType vte_pty_get_type (void);
 
-VtePty *vte_pty_new (VtePtyFlags flags,
-                     GError **error);
+VtePty *vte_pty_new (VtePtyFlags flags, GError **error);
 
-VtePty *vte_pty_new_foreign (int fd,
-                             GError **error);
+VtePty *vte_pty_new_foreign (int fd, GError **error);
 
 int vte_pty_get_fd (VtePty *pty);
 
@@ -99,22 +97,13 @@ void vte_pty_close (VtePty *pty);
 
 void vte_pty_child_setup (VtePty *pty);
 
-gboolean vte_pty_get_size (VtePty *pty,
-                           int *rows,
-                           int *columns,
-                           GError **error);
+gboolean vte_pty_get_size (VtePty *pty, int *rows, int *columns, GError **error);
 
-gboolean vte_pty_set_size (VtePty *pty,
-                           int rows,
-                           int columns,
-                           GError **error);
+gboolean vte_pty_set_size (VtePty *pty, int rows, int columns, GError **error);
 
-gboolean vte_pty_set_utf8 (VtePty *pty,
-                           gboolean utf8,
-                           GError **error);
+gboolean vte_pty_set_utf8 (VtePty *pty, gboolean utf8, GError **error);
 
-void vte_pty_set_term (VtePty *pty,
-                       const char *emulation);
+void vte_pty_set_term (VtePty *pty, const char *emulation);
 
 G_END_DECLS
 
