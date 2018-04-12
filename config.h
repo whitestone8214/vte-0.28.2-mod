@@ -99,7 +99,7 @@
 #define UTMP struct utmpx
 #define VERSION "0.28.2"
 #define VTE_DEFAULT_EMULATION "xterm"
-#define VTE_USE_GNOME_PTY_HELPER 1
+//#define VTE_USE_GNOME_PTY_HELPER 1
 #define _GNU_SOURCE 1
 
 #define LOCALEDIR "/usr/share/locale"
