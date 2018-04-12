@@ -27,22 +27,6 @@
 
 #include <config.h>
 
-/*#include <glib.h>
-#include <glib/gstdio.h>
-#include <glib-object.h>
-#include <gdk/gdk.h>
-#include <gtk/gtk.h>
-#include <pango/pango.h>*/
-#include <gtk/gtk.h>
-
-#include <math.h>
-#include <locale.h>
-#include <wchar.h>
-#include <sys/wait.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-
 #include "vte.h"
 #include "vte-private.h"
 #include "vte-gtk-compat.h"
@@ -77,6 +61,7 @@ typedef gunichar wint_t;
 #define VTE_TERMCAP_NAME "termcap"
 
 
+void _vte_keymap_map(guint keyval, GdkModifierType modifiers, gboolean sun_mode, gboolean hp_mode, gboolean legacy_mode, gboolean vt220_mode, gboolean app_cursor_keys, gboolean app_keypad_keys, struct _vte_termcap *termcap, const char *terminal, char **normal, gssize *normal_length, const char **special);
 static void vte_terminal_set_visibility (VteTerminal *terminal, GdkVisibilityState state);
 static void vte_terminal_set_termcap(VteTerminal *terminal, const char *path,
 				     gboolean reset);

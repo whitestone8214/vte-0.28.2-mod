@@ -19,10 +19,16 @@
 #ifndef vte_vte_h_included
 #define vte_vte_h_included
 
-/*#include <glib.h>
-#include <gio/gio.h>
-#include <pango/pango.h>*/
 #include <gtk/gtk.h>
+#include <termcap.h>
+
+#include <math.h>
+#include <locale.h>
+#include <wchar.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
 
 #define __VTE_VTE_H_INSIDE__ 1
 
