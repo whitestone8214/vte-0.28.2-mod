@@ -8,20 +8,19 @@
 
 
 _versionVte="0.28.2"
-_editionVte="5"
+_editionVte="6"
 _destinationVte="packages/vte/${_versionVte}-${_editionVte}"
 
 if (test "$1" = "build"); then
-	#gcc $(pkg-config --cflags --libs gtk+-x11-2.0 gio-unix-2.0 ncurses) -I. -Wno-deprecated-declarations -fPIC src/{caps,debug,iso2022,keymap,marshal,matcher,pty,reaper,ring,table,trie,vte,vteaccess,vtebg,vteconv,vtedraw,vteregex,vterowdata,vteseq,vtestream,vtetc,vtetree,vtetypebuiltins,vteunistr}.c -shared -o libvte.so || exit 1
-	gcc $(pkg-config --cflags --libs gtk+-x11-2.0 gio-unix-2.0) -I. -Wno-deprecated-declarations -fPIC src/{caps,debug,iso2022,marshal,matcher,pty,reaper,ring,table,trie,vte,vteaccess,vtebg,vteconv,vtedraw,vteregex,vterowdata,vteseq,vtestream,vtetc,vtetree,vtetypebuiltins,vteunistr}.c -shared -o libvte.so || exit 1
-	#gcc -Ignome-pty-helper -I. -lutil gnome-pty-helper/gnome-{login-support,pty-helper,utmp}.c -o gnome-pty-helper.elf
+	#gcc $(pkg-config --cflags --libs gtk+-x11-2.0 gio-unix-2.0) -I. -Wno-deprecated-declarations -fPIC src/{caps,debug,iso2022,marshal,matcher,pty,reaper,ring,table,trie,vte,vteaccess,vtebg,vteconv,vtedraw,vteregex,vterowdata,vteseq,vtestream,vtetc,vtetree,vtetypebuiltins,vteunistr}.c -shared -o libvte.so || exit 1
+	gcc $(pkg-config --cflags --libs gtk+-x11-2.0 gio-unix-2.0) -I. -Wno-deprecated-declarations -fPIC src/{caps,debug,iso2022,marshal,matcher,pty,reaper,ring,table,trie,vte,vtebg,vteconv,vtedraw,vteregex,vterowdata,vteseq,vtestream,vtetc,vtetree,vtetypebuiltins,vteunistr}.c -shared -o libvte.so || exit 1
 elif (test "$1" = "install"); then
 	$0 uninstall || exit 1
 	
 	mkdir -p $2/${_destinationVte}/{includes,assets/{pkgconfig,termcaps}} || exit 1
 	cp -f libvte.so $2/${_destinationVte}
-	#cp -f gnome-pty-helper.elf $2/${_destinationVte}/gnome-pty-helper
-	cp -f src/{pty,reaper,vte,vteaccess,vtepty,vtetypebuiltins,vteversion,vtedeprecated}.h $2/${_destinationVte}/includes
+	#cp -f src/{pty,reaper,vte,vteaccess,vtepty,vtetypebuiltins,vteversion,vtedeprecated}.h $2/${_destinationVte}/includes
+	cp -f src/{pty,reaper,vte,vtepty,vtetypebuiltins,vteversion,vtedeprecated}.h $2/${_destinationVte}/includes
 	cp -f termcaps/xterm $2/${_destinationVte}/assets/termcaps
 	cp -f vte-mod.pc $2/${_destinationVte}/assets/pkgconfig/vte.pc
 elif (test "$1" = "link"); then
