@@ -25,10 +25,15 @@
 #include <math.h>
 #include <locale.h>
 #include <wchar.h>
-#include <sys/wait.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <regex.h>
+#include <errno.h>
+#include <limits.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 
 #define __VTE_VTE_H_INSIDE__ 1
 
@@ -312,6 +317,22 @@ struct _VteTerminalAccessibleFactory {
 struct _VteTerminalAccessibleFactoryClass {
 	AtkObjectFactoryClass parent;
 };
+
+struct _vte_regex_match {
+	int rm_so, rm_eo;
+};
+struct _vte_regex;
+
+struct _vte_regex * _vte_regex_compile(const char *pattern);
+void _vte_regex_free(struct _vte_regex *regex);
+int _vte_regex_exec(struct _vte_regex *regex, const char *string, gsize nmatch, struct _vte_regex_match *matches);
+
+void _vte_terminal_accessible_ref(VteTerminal *terminal);
+char* _vte_terminal_get_selection(VteTerminal *terminal);
+void _vte_terminal_get_start_selection(VteTerminal *terminal, long *x, long *y);
+void _vte_terminal_get_end_selection(VteTerminal *terminal, long *x, long *y);
+void _vte_terminal_select_text(VteTerminal *terminal, long start_x, long start_y, long end_x, long end_y, int start_offset, int end_offset);
+void _vte_terminal_remove_selection(VteTerminal *terminal);
 
 GType vte_terminal_accessible_get_type(void);
 
