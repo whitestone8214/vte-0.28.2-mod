@@ -8,7 +8,7 @@
 
 
 _versionVte="0.28.2"
-_editionVte="14"
+_editionVte="15"
 _destinationVte="packages/vte/${_versionVte}-${_editionVte}"
 
 if (test "$1" = "build"); then
@@ -20,7 +20,7 @@ elif (test "$1" = "install"); then
 	mkdir -p $2/${_destinationVte}/{includes,assets/{pkgconfig,termcaps}} || exit 1
 	cp -f libvte.so $2/${_destinationVte}
 	#cp -f src/{pty,reaper,vte,vtepty,vtetypebuiltins,vteversion,vtedeprecated}.h $2/${_destinationVte}/includes
-	cp -f src/{pty,reaper,vte,vtepty,vteversion,vtedeprecated}.h $2/${_destinationVte}/includes
+	cp -f src/{pty,reaper,vte,vtepty,vteversion,vtedeprecated,vteunistr}.h $2/${_destinationVte}/includes
 	cp -f termcaps/xterm $2/${_destinationVte}/assets/termcaps
 	cp -f vte-mod.pc $2/${_destinationVte}/assets/pkgconfig/vte.pc
 elif (test "$1" = "link"); then

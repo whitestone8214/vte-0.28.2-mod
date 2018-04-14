@@ -32,12 +32,9 @@
 #include "vte-gtk-compat.h"
 #include "iso2022.h"
 #include "marshal.h"
-#include "matcher.h"
-#include "pty.h"
-#include "vteregex.h"
-#include "vtetc.h"
 #include "caps.h"
 #include "debug.h"
+#include "vtedraw.h"
 
 
 #if GTK_CHECK_VERSION (2, 90, 7)

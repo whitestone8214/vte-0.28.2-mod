@@ -41,94 +41,12 @@
 #include <unistd.h>
 #include <glib/gi18n-lib.h>
 
-#include "vte.h"
 #include "buffer.h"
-#include "debug.h"
 #include "vteconv.h"
-#include "vtedraw.h"
 #include "reaper.h"
 #include "ring.h"
-#include "caps.h"
 
 G_BEGIN_DECLS
-
-#define VTE_TAB_WIDTH			8
-#define VTE_LINE_WIDTH			1
-#define VTE_ROWS			24
-#define VTE_COLUMNS			80
-#define VTE_LEGACY_COLOR_SET_SIZE	8
-#define VTE_COLOR_PLAIN_OFFSET		0
-#define VTE_COLOR_BRIGHT_OFFSET		8
-#define VTE_COLOR_DIM_OFFSET		16
-/* More color defines in ring.h */
-
-#define VTE_SCROLLBACK_INIT		100
-#define VTE_SATURATION_MAX		10000
-#define VTE_DEFAULT_CURSOR		GDK_XTERM
-#define VTE_MOUSING_CURSOR		GDK_LEFT_PTR
-#define VTE_TAB_MAX			999
-#define VTE_ADJUSTMENT_PRIORITY		G_PRIORITY_DEFAULT_IDLE
-#define VTE_INPUT_RETRY_PRIORITY	G_PRIORITY_HIGH
-#define VTE_INPUT_PRIORITY		G_PRIORITY_DEFAULT_IDLE
-#define VTE_CHILD_INPUT_PRIORITY	G_PRIORITY_DEFAULT_IDLE
-#define VTE_CHILD_OUTPUT_PRIORITY	G_PRIORITY_HIGH
-#define VTE_FX_PRIORITY			G_PRIORITY_DEFAULT_IDLE
-#define VTE_REGCOMP_FLAGS		REG_EXTENDED
-#define VTE_REGEXEC_FLAGS		0
-#define VTE_INPUT_CHUNK_SIZE		0x2000
-#define VTE_MAX_INPUT_READ		0x1000
-#define VTE_INVALID_BYTE		'?'
-#define VTE_DISPLAY_TIMEOUT		10
-#define VTE_UPDATE_TIMEOUT		15
-#define VTE_UPDATE_REPEAT_TIMEOUT	30
-#define VTE_MAX_PROCESS_TIME		100
-#define VTE_CELL_BBOX_SLACK		1
-
-#define VTE_UTF8_BPC                    (6) /* Maximum number of bytes used per UTF-8 character */
-
-#define I_(string) (g_intern_static_string(string))
-
-
-typedef enum {
-        VTE_REGEX_GREGEX,
-        VTE_REGEX_VTE,
-        VTE_REGEX_UNDECIDED
-} VteRegexMode;
-
-typedef enum {
-  VTE_REGEX_CURSOR_GDKCURSOR,
-  VTE_REGEX_CURSOR_GDKCURSORTYPE,
-  VTE_REGEX_CURSOR_NAME
-} VteRegexCursorMode;
-
-/* The order is important */
-typedef enum {
-	MOUSE_TRACKING_NONE,
-	MOUSE_TRACKING_SEND_XY_ON_CLICK,
-	MOUSE_TRACKING_SEND_XY_ON_BUTTON,
-	MOUSE_TRACKING_HILITE_TRACKING,
-	MOUSE_TRACKING_CELL_MOTION_TRACKING,
-	MOUSE_TRACKING_ALL_MOTION_TRACKING
-} MouseTrackingMode;
-
-/* A match regex, with a tag. */
-struct vte_match_regex {
-	gint tag;
-        VteRegexMode mode;
-        union { /* switched on |mode| */
-              struct {
-                    GRegex *regex;
-                    GRegexMatchFlags flags;
-              } gregex;
-              struct _vte_regex *reg;
-        } regex;
-        VteRegexCursorMode cursor_mode;
-        union {
-	       GdkCursor *cursor;
-               char *cursor_name;
-               GdkCursorType cursor_type;
-        } cursor;
-};
 
 /* The terminal's keypad/cursor state.  A terminal can either be using the
  * normal keypad, or the "application" keypad. */
@@ -403,46 +321,9 @@ struct _VteTerminalClassPrivate {
 };
 #endif
 
-VteRowData *_vte_terminal_ensure_row(VteTerminal *terminal);
-void _vte_terminal_set_pointer_visible(VteTerminal *terminal, gboolean visible);
-void _vte_invalidate_all(VteTerminal *terminal);
-void _vte_invalidate_cells(VteTerminal *terminal,
-			   glong column_start, gint column_count,
-			   glong row_start, gint row_count);
-void _vte_invalidate_cell(VteTerminal *terminal, glong col, glong row);
-void _vte_invalidate_cursor_once(VteTerminal *terminal, gboolean periodic);
-VteRowData * _vte_new_row_data(VteTerminal *terminal);
-void _vte_terminal_adjust_adjustments(VteTerminal *terminal);
-void _vte_terminal_queue_contents_changed(VteTerminal *terminal);
-void _vte_terminal_emit_text_deleted(VteTerminal *terminal);
-void _vte_terminal_emit_text_inserted(VteTerminal *terminal);
-void _vte_terminal_cursor_down (VteTerminal *terminal);
-gboolean _vte_terminal_insert_char(VteTerminal *terminal, gunichar c,
-			       gboolean force_insert_mode,
-			       gboolean invalidate_cells);
-void _vte_terminal_scroll_region(VteTerminal *terminal,
-				 long row, glong count, glong delta);
-void _vte_terminal_set_default_attributes(VteTerminal *terminal);
-void _vte_terminal_clear_tabstop(VteTerminal *terminal, int column);
-gboolean _vte_terminal_get_tabstop(VteTerminal *terminal, int column);
-void _vte_terminal_set_tabstop(VteTerminal *terminal, int column);
-void _vte_terminal_update_insert_delta(VteTerminal *terminal);
-void _vte_terminal_cleanup_tab_fragments_at_cursor (VteTerminal *terminal);
-void _vte_terminal_audible_beep(VteTerminal *terminal);
-void _vte_terminal_visible_beep(VteTerminal *terminal);
-void _vte_terminal_beep(VteTerminal *terminal);
 
-void _vte_terminal_inline_error_message(VteTerminal *terminal, const char *format, ...) G_GNUC_PRINTF(2,3);
-
-VteRowData *_vte_terminal_ring_insert (VteTerminal *terminal, glong position, gboolean fill);
-VteRowData *_vte_terminal_ring_append (VteTerminal *terminal, gboolean fill);
-void _vte_terminal_ring_remove (VteTerminal *terminal, glong position);
 
 /* vteseq.c: */
-void _vte_terminal_handle_sequence(VteTerminal *terminal,
-				   const char *match_s,
-				   GQuark match,
-				   GValueArray *params);
 
 G_END_DECLS
 

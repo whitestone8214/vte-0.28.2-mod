@@ -28,15 +28,14 @@
 
 #include "vte.h"
 #include "vte-private.h"
-#include "vtetc.h"
+#include "debug.h"
+#include "caps.h"
 
 #define BEL "\007"
 
 
 
 /* FUNCTIONS WE USE */
-
-
 
 static void
 display_control_sequence(const char *name, GValueArray *params)
