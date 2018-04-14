@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2002 Red Hat, Inc.
+ * Copyright (C) 2004 Benjamin Otte <otte@gnome.org>
  *
  * This is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Library General Public License as published by
@@ -27,11 +28,26 @@
 #include "buffer.h"
 #include "matcher.h"
 
+
+#define VTE_TREE_ARRAY_SIZE (128)
+
+
 G_BEGIN_DECLS
 
 struct _vte_iso2022_state;
-typedef void (*_vte_iso2022_codeset_changed_cb_fn)(struct _vte_iso2022_state *,
-						   gpointer);
+typedef struct _VteTree VteTree;
+struct _VteTree {
+  GTree *tree;
+  gpointer array[VTE_TREE_ARRAY_SIZE];
+};
+
+
+typedef void (*_vte_iso2022_codeset_changed_cb_fn)(struct _vte_iso2022_state *, gpointer);
+
+VteTree *_vte_tree_new(GCompareFunc key_compare_func);
+void _vte_tree_destroy(VteTree *tree);
+void _vte_tree_insert(VteTree *tree, gpointer key, gpointer value);
+gpointer _vte_tree_lookup(VteTree *tree, gconstpointer key);
 struct _vte_iso2022_state *_vte_iso2022_state_new(const char *native_codeset,
 						  _vte_iso2022_codeset_changed_cb_fn,
 						  gpointer);

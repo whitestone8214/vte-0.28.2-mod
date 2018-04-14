@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2002,2003 Red Hat, Inc.
+ * Copyright (C) 2004 Benjamin Otte <otte@gnome.org>
  *
  * This is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Library General Public License as published by
@@ -23,12 +24,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <glib.h>
+
 #include "debug.h"
 #include "buffer.h"
 #include "iso2022.h"
 #include "matcher.h"
 #include "vteconv.h"
-#include "vtetree.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -288,6 +289,44 @@ static const struct _vte_iso2022_map16 _vte_iso2022_map_wide_D[] = {
 static const struct _vte_iso2022_map32 _vte_iso2022_map_wide_G[] = {
 #include "unitable.CNS11643"
 };
+
+VteTree *
+_vte_tree_new(GCompareFunc key_compare_func)
+{
+  VteTree *tree = g_slice_new0 (VteTree);
+  tree->tree = g_tree_new (key_compare_func);
+  return tree;
+}
+
+void 
+_vte_tree_destroy(VteTree *tree)
+{
+  g_tree_destroy (tree->tree);
+  g_slice_free (VteTree, tree);
+}
+
+void 
+_vte_tree_insert(VteTree *tree, gpointer key, gpointer value)
+{
+  guint index = GPOINTER_TO_UINT (key);
+  
+  if (index < VTE_TREE_ARRAY_SIZE) {
+    tree->array[index] = value;
+    return;
+  }
+  g_tree_insert (tree->tree, key, value);
+}
+
+gpointer
+_vte_tree_lookup(VteTree *tree, gconstpointer key)
+{
+  const guint index = GPOINTER_TO_UINT (key);
+  
+  if (index < VTE_TREE_ARRAY_SIZE)
+    return tree->array[index];
+
+  return g_tree_lookup (tree->tree, key);
+}
 
 static gint
 _vte_direct_compare(gconstpointer a, gconstpointer b)
