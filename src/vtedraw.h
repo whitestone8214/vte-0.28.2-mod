@@ -24,7 +24,6 @@
 
 #include <glib.h>
 #include <gtk/gtk.h>
-#include "vtebg.h"
 #include "vte.h"
 #include "vteunistr.h"
 #include "vte-gtk-compat.h"
@@ -49,7 +48,47 @@ G_BEGIN_DECLS
 #define VTE_DRAW_OPAQUE 0xff
 #define VTE_DRAW_MAX_LENGTH 1024
 
-struct _vte_draw;
+#define VTE_TYPE_BG            (vte_bg_get_type())
+#define VTE_BG(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), VTE_TYPE_BG, VteBg))
+#define VTE_BG_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  VTE_TYPE_BG, VteBgClass))
+#define VTE_IS_BG(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), VTE_TYPE_BG))
+#define VTE_IS_BG_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  VTE_TYPE_BG))
+#define VTE_BG_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  VTE_TYPE_BG, VteBgClass))
+
+
+typedef struct _VteBg         VteBg;
+typedef struct _VteBgPrivate  VteBgPrivate;
+typedef struct _VteBgClass    VteBgClass;
+
+struct _VteBg {
+	GObject parent;
+
+        /*< private >*/
+	VteBgPrivate *pvt;
+};
+
+struct _VteBgClass {
+	GObjectClass parent_class;
+};
+
+typedef enum {
+	VTE_BG_SOURCE_NONE,
+	VTE_BG_SOURCE_ROOT,
+	VTE_BG_SOURCE_PIXBUF,
+	VTE_BG_SOURCE_FILE
+} VteBgSourceType;
+
+struct _vte_draw {
+	GtkWidget *widget;
+
+	gint started;
+
+	struct font_info *font;
+	struct font_info *font_bold;
+	cairo_pattern_t *bg_pattern;
+
+	cairo_t *cr;
+};
 
 /* A request to draw a particular character spanning a given number of columns
    at the given location.  Unlike most APIs, (x,y) specifies the top-left
@@ -59,6 +98,20 @@ struct _vte_draw_text_request {
 	vteunistr c;
 	gshort x, y, columns;
 };
+
+
+GType vte_bg_get_type(void);
+
+VteBg *vte_bg_get_for_screen(GdkScreen *screen);
+
+cairo_surface_t *
+vte_bg_get_surface(VteBg *bg,
+		   VteBgSourceType source_type,
+		   GdkPixbuf *source_pixbuf,
+		   const char *source_file,
+		   const PangoColor *tint,
+		   double saturation,
+		   cairo_surface_t *other);
 
 /* Create and destroy a draw structure. */
 struct _vte_draw *_vte_draw_new(GtkWidget *widget);
