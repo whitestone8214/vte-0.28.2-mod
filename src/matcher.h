@@ -21,13 +21,15 @@
 #ifndef vte_matcher_h_included
 #define vte_matcher_h_included
 
-
+#include <glib.h>
 #include <glib-object.h>
+
 #include "vtetc.h"
 
 G_BEGIN_DECLS
 
 struct _vte_matcher;
+struct _vte_trie;
 
 struct _vte_matcher_impl {
 	const struct _vte_matcher_class *klass;
@@ -51,6 +53,38 @@ struct _vte_matcher_class{
 	_vte_matcher_match_func match;
 	_vte_matcher_destroy_func destroy;
 };
+
+
+/* Create a new trie structure. */
+struct _vte_trie *_vte_trie_new(void);
+
+/* Free a trie structure. */
+void _vte_trie_free(struct _vte_trie *trie);
+
+/* Add a string to the trie, along with its associated result and an optional
+ * Quark to store with it. */
+void _vte_trie_add(struct _vte_trie *trie,
+		   const char *pattern, size_t length,
+		   const char *result, GQuark quark);
+
+/* See if a given pattern of a given length is in the trie.  The result is
+ * returned both as the result of the function, and in the pointer res (if
+ * res is not NULL).  The associated quark is also stored in "quark".  If
+ * the string could be the initial portion of some sequence in the trie, the
+ * empty string is returned for the answer.  If no match is found, and the
+ * passed-in string can not be an initial substring of one of the strings in
+ * the trie, then NULL is returned. */
+const char *_vte_trie_match(struct _vte_trie *trie,
+			    const gunichar *pattern, size_t length,
+			    const char **res,
+			    const gunichar **consumed,
+			    GQuark *quark,
+			    GValueArray **array);
+
+/* Print the contents of the trie (mainly for diagnostic purposes). */
+void _vte_trie_print(struct _vte_trie *trie);
+
+extern const struct _vte_matcher_class _vte_matcher_trie;
 
 /* Create and init matcher. */
 struct _vte_matcher *_vte_matcher_new(const char *emulation,
