@@ -30,6 +30,7 @@ G_BEGIN_DECLS
 
 struct _vte_matcher;
 struct _vte_trie;
+struct _vte_table;
 
 struct _vte_matcher_impl {
 	const struct _vte_matcher_class *klass;
@@ -54,6 +55,27 @@ struct _vte_matcher_class{
 	_vte_matcher_destroy_func destroy;
 };
 
+
+/* Create an empty, one-level table. */
+struct _vte_table *_vte_table_new(void);
+
+/* Free a table tree. */
+void _vte_table_free(struct _vte_table *table);
+
+/* Add a string to the matching tree. */
+void _vte_table_add(struct _vte_table *table,
+		    const char *pattern, gssize length,
+		    const char *result, GQuark quark);
+
+/* Check if a string matches something in the tree. */
+const char *_vte_table_match(struct _vte_table *table,
+			     const gunichar *pattern, gssize length,
+			     const char **res, const gunichar **consumed,
+			     GQuark *quark, GValueArray **array);
+/* Dump out the contents of a tree. */
+void _vte_table_print(struct _vte_table *table);
+
+extern const struct _vte_matcher_class _vte_matcher_table;
 
 /* Create a new trie structure. */
 struct _vte_trie *_vte_trie_new(void);
