@@ -17,33 +17,3 @@
  *
  * Red Hat Author(s): Behdad Esfahbod
  */
-
-#ifndef vtestream_h_included
-#define vtestream_h_included
-
-#include <glib-object.h>
-#include <gio/gio.h>
-
-G_BEGIN_DECLS
-
-typedef struct _VteStream VteStream;
-
-void _vte_stream_reset (VteStream *stream, gsize offset);
-gsize _vte_stream_append (VteStream *stream, const char *data, gsize len);
-gboolean _vte_stream_read (VteStream *stream, gsize offset, char *data, gsize len);
-void _vte_stream_truncate (VteStream *stream, gsize offset);
-void _vte_stream_new_page (VteStream *stream);
-gsize _vte_stream_head (VteStream *stream);
-gboolean _vte_stream_write_contents (VteStream *stream, GOutputStream *output,
-				     gsize start_offset,
-				     GCancellable *cancellable, GError **error);
-
-
-/* Various streams */
-
-VteStream *
-_vte_file_stream_new (void);
-
-G_END_DECLS
-
-#endif

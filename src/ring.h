@@ -23,6 +23,7 @@
 #ifndef vte_ring_h_included
 #define vte_ring_h_included
 
+#include <glib-object.h>
 #include <gio/gio.h>
 
 #include "vte.h"
@@ -41,6 +42,7 @@
 
 G_BEGIN_DECLS
 
+typedef struct _VteStream VteStream;
 typedef struct _VteCellAttr {
 	guint32 fragment: 1;	/* A continuation cell. */
 	guint32 columns: 4;	/* Number of visible columns
@@ -177,6 +179,20 @@ struct _VteRing {
 #define _vte_ring_next(__ring) ((glong) (__ring)->end)
 #define _vte_row_data_length(__row)			((__row)->len + 0)
 
+void _vte_stream_reset (VteStream *stream, gsize offset);
+gsize _vte_stream_append (VteStream *stream, const char *data, gsize len);
+gboolean _vte_stream_read (VteStream *stream, gsize offset, char *data, gsize len);
+void _vte_stream_truncate (VteStream *stream, gsize offset);
+void _vte_stream_new_page (VteStream *stream);
+gsize _vte_stream_head (VteStream *stream);
+gboolean _vte_stream_write_contents (VteStream *stream, GOutputStream *output,
+				     gsize start_offset,
+				     GCancellable *cancellable, GError **error);
+
+/* Various streams */
+
+VteStream *
+_vte_file_stream_new (void);
 static inline const VteCell *
 _vte_row_data_get (const VteRowData *row, gulong col)
 {

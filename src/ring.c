@@ -25,6 +25,9 @@
 
 #include <string.h>
 
+#include "vtestream-base.h"
+#include "vtestream-file.h"
+
 
 typedef struct _VteCells VteCells;
 struct _VteCells {

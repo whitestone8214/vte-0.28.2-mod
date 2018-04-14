@@ -17,17 +17,3 @@
  *
  * Red Hat Author(s): Behdad Esfahbod
  */
-
-#include <config.h>
-
-#include "debug.h"
-#include "vtestream.h"
-
-
-/*
- * In the future it may be worth replacing these with gio.  Not sure about
- * the overhead though.
- */
-
-#include "vtestream-base.h"
-#include "vtestream-file.h"
