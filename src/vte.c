@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2004,2009,2010 Red Hat, Inc.
+ * Copyright (C) 2001-2004,2008,2009,2010 Red Hat, Inc.
  * Copyright © 2008, 2009, 2010 Christian Persch
  *
  * This is free software; you can redistribute it and/or modify it under
@@ -62,6 +62,20 @@ enum {
 };
 
 #define VTE_TERMINAL_ACCESSIBLE_PRIVATE_DATA "VteTerminalAccessiblePrivateData"
+#define VTE_UNISTR_START 0x80000000
+
+static vteunistr unistr_next = VTE_UNISTR_START + 1;
+
+struct VteUnistrDecomp {
+	vteunistr prefix;
+	gunichar  suffix;
+};
+
+GArray     *unistr_decomp;
+GHashTable *unistr_comp;
+
+#define DECOMP_FROM_INDEX(i)	g_array_index (unistr_decomp, struct VteUnistrDecomp, (i))
+#define DECOMP_FROM_UNISTR(s)	DECOMP_FROM_INDEX ((s) - VTE_UNISTR_START)
 
 typedef struct _VteTerminalAccessiblePrivate {
 	gboolean snapshot_contents_invalid;	/* This data is stale. */
@@ -209,6 +223,89 @@ static GTimer *process_timer;
 
 static const GtkBorder default_inner_border = { 1, 1, 1, 1 };
 
+
+static guint
+unistr_comp_hash (gconstpointer key)
+{
+	struct VteUnistrDecomp *decomp;
+	decomp = &DECOMP_FROM_INDEX (GPOINTER_TO_UINT (key));
+	return decomp->prefix ^ decomp->suffix;
+}
+
+static gboolean
+unistr_comp_equal (gconstpointer a, gconstpointer b)
+{
+	return 0 == memcmp (&DECOMP_FROM_INDEX (GPOINTER_TO_UINT (a)),
+			    &DECOMP_FROM_INDEX (GPOINTER_TO_UINT (b)),
+			    sizeof (struct VteUnistrDecomp));
+}
+
+vteunistr
+_vte_unistr_append_unichar (vteunistr s, gunichar c)
+{
+	struct VteUnistrDecomp decomp;
+	vteunistr ret = 0;
+
+	decomp.prefix = s;
+	decomp.suffix = c;
+
+	if (G_UNLIKELY (!unistr_decomp)) {
+		unistr_decomp = g_array_new (FALSE, TRUE, sizeof (struct VteUnistrDecomp));
+		g_array_set_size (unistr_decomp, 1);
+		unistr_comp = g_hash_table_new (unistr_comp_hash, unistr_comp_equal);
+	} else {
+		DECOMP_FROM_INDEX (0) = decomp;
+		ret = GPOINTER_TO_UINT (g_hash_table_lookup (unistr_comp, GUINT_TO_POINTER (0)));
+	}
+
+	if (G_UNLIKELY (!ret)) {
+		/* sanity check to avoid OOM */
+		if (G_UNLIKELY (_vte_unistr_strlen (s) > 10 || unistr_next - VTE_UNISTR_START > 100000))
+			return s;
+
+		ret = unistr_next++;
+		g_array_append_val (unistr_decomp, decomp);
+		g_hash_table_insert (unistr_comp,
+				     GUINT_TO_POINTER (ret - VTE_UNISTR_START),
+				     GUINT_TO_POINTER (ret));
+	}
+
+	return ret;
+}
+
+gunichar
+_vte_unistr_get_base (vteunistr s)
+{
+	g_return_val_if_fail (s < unistr_next, s);
+	while (G_UNLIKELY (s >= VTE_UNISTR_START))
+		s = DECOMP_FROM_UNISTR (s).prefix;
+	return (gunichar) s;
+}
+
+void
+_vte_unistr_append_to_string (vteunistr s, GString *gs)
+{
+	g_return_if_fail (s < unistr_next);
+	if (G_UNLIKELY (s >= VTE_UNISTR_START)) {
+		struct VteUnistrDecomp *decomp;
+		decomp = &DECOMP_FROM_UNISTR (s);
+		_vte_unistr_append_to_string (decomp->prefix, gs);
+		s = decomp->suffix;
+	}
+	g_string_append_unichar (gs, (gunichar) s);
+}
+
+int
+_vte_unistr_strlen (vteunistr s)
+{
+	int len = 1;
+	g_return_val_if_fail (s < unistr_next, len);
+	while (G_UNLIKELY (s >= VTE_UNISTR_START)) {
+		s = DECOMP_FROM_UNISTR (s).prefix;
+		len++;
+	}
+	return len;
+}
 
 /* enumerations from "vte.h" */
 GType

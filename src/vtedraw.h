@@ -25,7 +25,6 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 #include "vte.h"
-#include "vteunistr.h"
 #include "vte-gtk-compat.h"
 
 G_BEGIN_DECLS

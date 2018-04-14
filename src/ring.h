@@ -27,7 +27,6 @@
 #include <gio/gio.h>
 
 #include "vte.h"
-#include "vteunistr.h"
 #include "vtestream.h"
 
 
