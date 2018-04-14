@@ -24,12 +24,118 @@
 #define vte_ring_h_included
 
 #include <gio/gio.h>
-#include "vte.h"
 
-#include "vterowdata.h"
+#include "vte.h"
+#include "vteunistr.h"
 #include "vtestream.h"
 
+
+#define VTE_DEF_FG			256
+#define VTE_DEF_BG			257
+#define VTE_BOLD_FG			258
+#define VTE_DIM_FG			259
+#define VTE_DEF_HL                      260
+#define VTE_CUR_BG			261
+#define VTE_PALETTE_SIZE		262
+
+
 G_BEGIN_DECLS
+
+typedef struct _VteCellAttr {
+	guint32 fragment: 1;	/* A continuation cell. */
+	guint32 columns: 4;	/* Number of visible columns
+				   (as determined by g_unicode_iswide(c)).
+				   Also abused for tabs; bug 353610
+				   Keep at least 4 for tabs to work
+				   */
+	guint32 bold: 1;
+	guint32 fore: 9;	/* Index into color palette */
+	guint32 back: 9;	/* Index into color palette. */
+
+	guint32 standout: 1;
+	guint32 underline: 1;
+	guint32 strikethrough: 1;
+
+	guint32 reverse: 1;
+	guint32 blink: 1;
+	guint32 half: 1;
+
+	guint32 invisible: 1;
+	/* unused; bug 499893
+	guint32 protect: 1;
+	 */
+
+	/* 30 bits */
+} VteCellAttr;
+G_STATIC_ASSERT (sizeof (VteCellAttr) == 4);
+
+typedef union _VteIntCellAttr {
+	VteCellAttr s;
+	guint32 i;
+} VteIntCellAttr;
+G_STATIC_ASSERT (sizeof (VteCellAttr) == sizeof (VteIntCellAttr));
+
+/*
+ * VteCell: A single cell's data
+ */
+
+typedef struct _VteCell {
+	vteunistr c;
+	VteCellAttr attr;
+} VteCell;
+G_STATIC_ASSERT (sizeof (VteCell) == 8);
+
+typedef union _VteIntCell {
+	VteCell cell;
+	struct {
+		guint32 c;
+		guint32 attr;
+	} i;
+} VteIntCell;
+G_STATIC_ASSERT (sizeof (VteCell) == sizeof (VteIntCell));
+
+static const VteIntCell basic_cell = {
+	{
+		0,
+		{
+			0, /* fragment */
+			1, /* columns */
+			0, /* bold */
+			VTE_DEF_FG, /* fore */
+			VTE_DEF_BG, /* back */
+
+			0, /* standout */
+			0, /* underline */
+			0, /* strikethrough */
+
+			0, /* reverse */
+			0, /* blink */
+			0, /* half */
+
+			0  /* invisible */
+		}
+	}
+};
+
+
+/*
+ * VteRowAttr: A single row's attributes
+ */
+
+typedef struct _VteRowAttr {
+	guint8 soft_wrapped: 1;
+} VteRowAttr;
+G_STATIC_ASSERT (sizeof (VteRowAttr) == 1);
+
+/*
+ * VteRowData: A single row's data
+ */
+
+typedef struct _VteRowData {
+	VteCell *cells;
+	guint16 len;
+	VteRowAttr attr;
+} VteRowData;
 
 
 typedef struct _VteCellAttrChange {
@@ -69,6 +175,34 @@ struct _VteRing {
 #define _vte_ring_delta(__ring) ((glong) (__ring)->start)
 #define _vte_ring_length(__ring) ((glong) ((__ring)->end - (__ring)->start))
 #define _vte_ring_next(__ring) ((glong) (__ring)->end)
+#define _vte_row_data_length(__row)			((__row)->len + 0)
+
+static inline const VteCell *
+_vte_row_data_get (const VteRowData *row, gulong col)
+{
+	if (G_UNLIKELY (row->len <= col))
+		return NULL;
+
+	return &row->cells[col];
+}
+
+static inline VteCell *
+_vte_row_data_get_writable (VteRowData *row, gulong col)
+{
+	if (G_UNLIKELY (row->len <= col))
+		return NULL;
+
+	return &row->cells[col];
+}
+
+void _vte_row_data_init (VteRowData *row);
+void _vte_row_data_clear (VteRowData *row);
+void _vte_row_data_fini (VteRowData *row);
+void _vte_row_data_insert (VteRowData *row, gulong col, const VteCell *cell);
+void _vte_row_data_append (VteRowData *row, const VteCell *cell);
+void _vte_row_data_remove (VteRowData *row, gulong col);
+void _vte_row_data_fill (VteRowData *row, const VteCell *cell, gulong len);
+void _vte_row_data_shrink (VteRowData *row, gulong max_len);
 
 const VteRowData *_vte_ring_index (VteRing *ring, gulong position);
 VteRowData *_vte_ring_index_writable (VteRing *ring, gulong position);
