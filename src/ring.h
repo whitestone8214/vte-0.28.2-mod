@@ -27,7 +27,6 @@
 #include <gio/gio.h>
 
 #include "vte.h"
-#include "vtestream.h"
 
 
 G_BEGIN_DECLS

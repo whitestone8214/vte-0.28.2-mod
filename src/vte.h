@@ -20,6 +20,7 @@
 #define vte_vte_h_included
 
 #include <gtk/gtk.h>
+#include <gdk/gdkx.h>
 #include <termcap.h>
 
 #include <math.h>
@@ -34,6 +35,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <sys/param.h>
+#include <stdio.h>
 
 #define __VTE_VTE_H_INSIDE__ 1
 
@@ -43,6 +46,26 @@
 #undef __VTE_VTE_H_INSIDE__
 
 G_BEGIN_DECLS
+
+
+/**
+ * vteunistr:
+ *
+ * vteunistr is a gunichar-compatible way to store strings.  A string
+ * consisting of a single unichar c is represented as the same value
+ * as c itself.  In that sense, gunichars can be readily used as
+ * vteunistrs.  Longer strings can be built by appending a unichar
+ * to an already existing string.
+ *
+ * vteunistr is essentially just a gunicode-compatible quark value.
+ * It can be used to store strings (of a base followed by combining
+ * characters) where the code was designed to only allow one character.
+ *
+ * Strings are internalized efficiently and never freed.  No memory
+ * management of vteunistr values is needed.
+ **/
+typedef guint32 vteunistr;
+
 
 #ifdef VTE_SEAL_ENABLE
 #define _VTE_SEAL(name) _vte_sealed__ ## name
@@ -56,12 +79,23 @@ G_BEGIN_DECLS
 #define _VTE_DEPRECATED(name) name
 #endif
 
-#define VTE_TYPE_TERMINAL            (vte_terminal_get_type())
-#define VTE_TERMINAL(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), VTE_TYPE_TERMINAL, VteTerminal))
-#define VTE_TERMINAL_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  VTE_TYPE_TERMINAL, VteTerminalClass))
-#define VTE_IS_TERMINAL(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), VTE_TYPE_TERMINAL))
-#define VTE_IS_TERMINAL_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  VTE_TYPE_TERMINAL))
-#define VTE_TERMINAL_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  VTE_TYPE_TERMINAL, VteTerminalClass))
+#define VTE_DRAW_SINGLE_WIDE_CHARACTERS	\
+					" !\"#$%&'()*+,-./" \
+					"0123456789" \
+					":;<=>?@" \
+					"ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+					"[\\]^_`" \
+					"abcdefghijklmnopqrstuvwxyz" \
+					"{|}~" \
+					""
+#define VTE_DRAW_DOUBLE_WIDE_CHARACTERS 0x4e00, 0x4e8c, 0x4e09, 0x56db, 0x4e94,\
+					0xac00, 0xac01, 0xac04, 0xac08, 0xac10
+/* For Pango, we have to use CJK Ideographs alone. Otherwise, 'width'
+   returned by pango_layout would be screwed up for Chinese and Japanese
+   fonts without Hangul */
+#define VTE_DRAW_DOUBLE_WIDE_IDEOGRAPHS 0x4e00, 0x4e8c, 0x4e09, 0x56db, 0x4e94
+#define VTE_DRAW_OPAQUE 0xff
+#define VTE_DRAW_MAX_LENGTH 1024
 
 #define VTE_META_MASK		GDK_META_MASK
 #define VTE_NUMLOCK_MASK	GDK_MOD2_MASK
@@ -109,6 +143,20 @@ G_BEGIN_DECLS
 
 #define I_(string) (g_intern_static_string(string))
 
+#define VTE_TYPE_TERMINAL            (vte_terminal_get_type())
+#define VTE_TERMINAL(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), VTE_TYPE_TERMINAL, VteTerminal))
+#define VTE_TERMINAL_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  VTE_TYPE_TERMINAL, VteTerminalClass))
+#define VTE_IS_TERMINAL(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), VTE_TYPE_TERMINAL))
+#define VTE_IS_TERMINAL_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  VTE_TYPE_TERMINAL))
+#define VTE_TERMINAL_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  VTE_TYPE_TERMINAL, VteTerminalClass))
+
+#define VTE_TYPE_BG            (vte_bg_get_type())
+#define VTE_BG(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), VTE_TYPE_BG, VteBg))
+#define VTE_BG_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  VTE_TYPE_BG, VteBgClass))
+#define VTE_IS_BG(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), VTE_TYPE_BG))
+#define VTE_IS_BG_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  VTE_TYPE_BG))
+#define VTE_BG_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  VTE_TYPE_BG, VteBgClass))
+
 
 typedef enum {
         VTE_REGEX_GREGEX,
@@ -133,23 +181,48 @@ typedef enum {
 } MouseTrackingMode;
 
 
-/**
- * vteunistr:
- *
- * vteunistr is a gunichar-compatible way to store strings.  A string
- * consisting of a single unichar c is represented as the same value
- * as c itself.  In that sense, gunichars can be readily used as
- * vteunistrs.  Longer strings can be built by appending a unichar
- * to an already existing string.
- *
- * vteunistr is essentially just a gunicode-compatible quark value.
- * It can be used to store strings (of a base followed by combining
- * characters) where the code was designed to only allow one character.
- *
- * Strings are internalized efficiently and never freed.  No memory
- * management of vteunistr values is needed.
- **/
-typedef guint32 vteunistr;
+typedef struct _VteBg         VteBg;
+typedef struct _VteBgPrivate  VteBgPrivate;
+typedef struct _VteBgClass    VteBgClass;
+
+struct _VteBg {
+	GObject parent;
+
+        /*< private >*/
+	VteBgPrivate *pvt;
+};
+
+struct _VteBgClass {
+	GObjectClass parent_class;
+};
+
+typedef enum {
+	VTE_BG_SOURCE_NONE,
+	VTE_BG_SOURCE_ROOT,
+	VTE_BG_SOURCE_PIXBUF,
+	VTE_BG_SOURCE_FILE
+} VteBgSourceType;
+
+struct _vte_draw {
+	GtkWidget *widget;
+
+	gint started;
+
+	struct font_info *font;
+	struct font_info *font_bold;
+	cairo_pattern_t *bg_pattern;
+
+	cairo_t *cr;
+};
+
+/* A request to draw a particular character spanning a given number of columns
+   at the given location.  Unlike most APIs, (x,y) specifies the top-left
+   corner of the cell into which the character will be drawn instead of the
+   left end of the baseline. */
+struct _vte_draw_text_request {
+	vteunistr c;
+	gshort x, y, columns;
+};
 
 /* A match regex, with a tag. */
 struct vte_match_regex {
@@ -300,6 +373,12 @@ struct _VteTerminalClass {
         VteTerminalClassPrivate *priv;
 #endif
 };
+
+#ifndef VTE_DISABLE_DEPRECATED
+#define __VTE_VTE_H_INSIDE__ 1
+#include "vtedeprecated.h"
+#undef __VTE_VTE_H_INSIDE__
+#endif /* VTE_DISABLE_DEPRECATED */
 
 /**
  * VteTerminalEraseBinding:
@@ -601,6 +680,70 @@ _vte_unistr_strlen (vteunistr s);
 #define _vte_row_data_length(__row)			((__row)->len + 0)
 
 
+GType vte_bg_get_type(void);
+
+VteBg *vte_bg_get_for_screen(GdkScreen *screen);
+
+cairo_surface_t *
+vte_bg_get_surface(VteBg *bg,
+		   VteBgSourceType source_type,
+		   GdkPixbuf *source_pixbuf,
+		   const char *source_file,
+		   const PangoColor *tint,
+		   double saturation,
+		   cairo_surface_t *other);
+
+/* Create and destroy a draw structure. */
+struct _vte_draw *_vte_draw_new(GtkWidget *widget);
+void _vte_draw_free(struct _vte_draw *draw);
+
+/* Begin and end a drawing operation.  If anything is buffered locally, it is
+   flushed to the window system when _end() is called. */
+void _vte_draw_start(struct _vte_draw *draw);
+void _vte_draw_end(struct _vte_draw *draw);
+
+void _vte_draw_set_background_solid(struct _vte_draw *draw,
+				    double red,
+				    double green,
+				    double blue,
+				    double opacity);
+void _vte_draw_set_background_image(struct _vte_draw *draw,
+				    VteBgSourceType type,
+				    GdkPixbuf *pixbuf,
+				    const char *file,
+				    const PangoColor *color,
+				    double saturation);
+void _vte_draw_set_background_scroll(struct _vte_draw *draw,
+				     gint x, gint y);
+
+void _vte_draw_clip(struct _vte_draw *draw, GdkRegion *region);
+void _vte_draw_clear(struct _vte_draw *draw,
+		     gint x, gint y, gint width, gint height);
+
+void _vte_draw_set_text_font(struct _vte_draw *draw,
+			     const PangoFontDescription *fontdesc,
+			     VteTerminalAntiAlias anti_alias);
+void _vte_draw_get_text_metrics(struct _vte_draw *draw,
+				gint *width, gint *height, gint *ascent);
+int _vte_draw_get_char_width(struct _vte_draw *draw, vteunistr c, int columns,
+			     gboolean bold);
+
+void _vte_draw_text(struct _vte_draw *draw,
+		    struct _vte_draw_text_request *requests, gsize n_requests,
+		    const PangoColor *color, guchar alpha, gboolean);
+gboolean _vte_draw_char(struct _vte_draw *draw,
+			struct _vte_draw_text_request *request,
+			const PangoColor *color, guchar alpha, gboolean bold);
+gboolean _vte_draw_has_char(struct _vte_draw *draw, vteunistr c, gboolean bold);
+
+
+void _vte_draw_fill_rectangle(struct _vte_draw *draw,
+			      gint x, gint y, gint width, gint height,
+			      const PangoColor *color, guchar alpha);
+void _vte_draw_draw_rectangle(struct _vte_draw *draw,
+			      gint x, gint y, gint width, gint height,
+			      const PangoColor *color, guchar alpha);
+			      
 VteRowData *_vte_terminal_ensure_row(VteTerminal *terminal);
 VteRowData * _vte_new_row_data(VteTerminal *terminal);
 VteRowData *_vte_terminal_ring_insert (VteTerminal *terminal, glong position, gboolean fill);
@@ -949,11 +1092,5 @@ void _vte_keymap_key_add_key_modifiers(guint keyval,
 #undef _VTE_DEPRECATED
 
 G_END_DECLS
-
-#ifndef VTE_DISABLE_DEPRECATED
-#define __VTE_VTE_H_INSIDE__ 1
-#include "vtedeprecated.h"
-#undef __VTE_VTE_H_INSIDE__
-#endif /* VTE_DISABLE_DEPRECATED */
 
 #endif
