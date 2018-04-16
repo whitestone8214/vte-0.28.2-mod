@@ -33,10 +33,18 @@
 #include <errno.h>
 #include <limits.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <termios.h>
+#include <stropts.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/param.h>
-#include <stdio.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/termios.h>
+
 
 #define __VTE_VTE_H_INSIDE__ 1
 
@@ -632,6 +640,27 @@ struct _VteRing {
 	VteRowData cached_row;
 	gulong cached_row_num;
 };
+
+
+/* Start up the given binary (exact path, not interpreted at all) in a
+ * pseudo-terminal of its own, returning the descriptor for the master
+ * side of the PTY pair, logging the session to the specified files, and
+ * storing the child's PID in the given argument. */
+int _vte_pty_open(pid_t *child, char **env_add,
+		  const char *command, char **argv, const char *directory,
+		  int columns, int rows,
+		  gboolean lastlog, gboolean utmp, gboolean wtmp);
+
+/* Set or read the size of a terminal.  Returns 0 on success, -1 on failure,
+ * with errno set to defined return codes from ioctl(). */
+int _vte_pty_get_size(int master, int *columns, int *rows);
+int _vte_pty_set_size(int master, int columns, int rows);
+
+/* Try to let the kernel know that the terminal is or is not UTF-8. */
+void _vte_pty_set_utf8(int pty, gboolean utf8);
+
+/* Close a pty. */
+void _vte_pty_close(int pty);
 
 /**
  * _vte_unistr_append_unichar:
