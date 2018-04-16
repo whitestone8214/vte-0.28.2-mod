@@ -24,10 +24,9 @@
 #include <glib.h>
 #include <glib-object.h>
 
-#include "vtetc.h"
-
 G_BEGIN_DECLS
 
+struct _vte_termcap;
 struct _vte_matcher;
 struct _vte_trie;
 struct _vte_table;
@@ -56,6 +55,32 @@ struct _vte_matcher_class{
 };
 
 
+/* Create a new termcap structure. */
+struct _vte_termcap *_vte_termcap_new(const char *filename);
+
+/* Free a termcap structure. */
+void _vte_termcap_free(struct _vte_termcap *termcap);
+
+/* Read a boolean capability for a given terminal. */
+gboolean _vte_termcap_find_boolean(struct _vte_termcap *termcap,
+				   const char *tname, const char *cap);
+
+/* Read a numeric capability for a given terminal. */
+long _vte_termcap_find_numeric(struct _vte_termcap *termcap, const char *tname,
+			       const char *cap);
+
+/* Read a string capability for a given terminal.  The returned string should
+ * be freed with g_free(). */
+char *_vte_termcap_find_string(struct _vte_termcap *termcap, const char *tname,
+			       const char *cap);
+
+/* Read a string capability for a given terminal, and return the length of
+ * the result in addition to the result itself.  The returned string should
+ * be freed with g_free(). */
+char *_vte_termcap_find_string_length(struct _vte_termcap *termcap,
+				      const char *tname,
+				      const char *cap, gssize *length);
+				      
 /* Create an empty, one-level table. */
 struct _vte_table *_vte_table_new(void);
 
