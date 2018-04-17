@@ -8,12 +8,12 @@
 
 
 _versionVte="0.28.2"
-_editionVte="22"
+_editionVte="23"
 _destinationVte="packages/vte/${_versionVte}-${_editionVte}"
 
 if (test "$1" = "build"); then
-	#gcc $(pkg-config --cflags --libs gtk+-x11-2.0 gio-unix-2.0) -I. -Wno-deprecated-declarations -fPIC src/{caps,debug,marshal,reaper,ring,vte,vteconv,vteseq}.c -shared -o libvte.so || exit 1
-	gcc $(pkg-config --cflags --libs gtk+-x11-2.0 gio-unix-2.0) -I. -Wno-deprecated-declarations -fPIC src/{reaper,ring,vte}.c -shared -o libvte.so || exit 1
+	#gcc $(pkg-config --cflags --libs gtk+-x11-2.0 gio-unix-2.0) -I. -Wno-deprecated-declarations -fPIC src/{reaper,ring,vte}.c -shared -o libvte.so || exit 1
+	gcc $(pkg-config --cflags --libs gtk+-x11-2.0 gio-unix-2.0) -I. -Wno-deprecated-declarations -fPIC src/vte.c -shared -o libvte.so || exit 1
 elif (test "$1" = "install"); then
 	$0 uninstall || exit 1
 	
