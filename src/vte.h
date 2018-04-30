@@ -1044,8 +1044,7 @@ void vte_terminal_select_all(VteTerminal *terminal);
 void vte_terminal_select_none(VteTerminal *terminal);
 
 /* Set the terminal's size. */
-void vte_terminal_set_size(VteTerminal *terminal,
-			   glong columns, glong rows);
+void vte_terminal_set_size(VteTerminal *terminal, glong columns, glong rows);
 
 /* Set various on-off settings. */
 void vte_terminal_set_audible_bell(VteTerminal *terminal, gboolean is_audible);
@@ -1054,70 +1053,22 @@ void vte_terminal_set_visible_bell(VteTerminal *terminal, gboolean is_visible);
 gboolean vte_terminal_get_visible_bell(VteTerminal *terminal);
 void vte_terminal_set_scroll_background(VteTerminal *terminal, gboolean scroll);
 void vte_terminal_set_scroll_on_output(VteTerminal *terminal, gboolean scroll);
-void vte_terminal_set_scroll_on_keystroke(VteTerminal *terminal,
-					  gboolean scroll);
-
-/* Set the color scheme. */
-void vte_terminal_set_color_dim(VteTerminal *terminal,
-				const GdkColor *dim);
-void vte_terminal_set_color_bold(VteTerminal *terminal,
-				 const GdkColor *bold);
-void vte_terminal_set_color_foreground(VteTerminal *terminal,
-				       const GdkColor *foreground);
-void vte_terminal_set_color_background(VteTerminal *terminal,
-				       const GdkColor *background);
-void vte_terminal_set_color_cursor(VteTerminal *terminal,
-				   const GdkColor *cursor_background);
-void vte_terminal_set_color_highlight(VteTerminal *terminal,
-				      const GdkColor *highlight_background);
-void vte_terminal_set_colors(VteTerminal *terminal,
-			     const GdkColor *foreground,
-			     const GdkColor *background,
-			     const GdkColor *palette,
-			     glong palette_size);
-
-#if GTK_CHECK_VERSION (2, 99, 0)
-void vte_terminal_set_color_bold_rgba(VteTerminal *terminal,
-                                      const GdkRGBA *bold);
-void vte_terminal_set_color_dim_rgba(VteTerminal *terminal,
-	                             const GdkRGBA *dim);
-void vte_terminal_set_color_foreground_rgba(VteTerminal *terminal,
-					    const GdkRGBA *foreground);
-void vte_terminal_set_color_background_rgba(VteTerminal *terminal,
-					    const GdkRGBA *background);
-void vte_terminal_set_color_cursor_rgba(VteTerminal *terminal,
-					const GdkRGBA *cursor_background);
-void vte_terminal_set_color_highlight_rgba(VteTerminal *terminal,
-					   const GdkRGBA *highlight_background);
-void vte_terminal_set_colors_rgba(VteTerminal *terminal,
-				  const GdkRGBA *foreground,
-				  const GdkRGBA *background,
-				  const GdkRGBA *palette,
-				  gsize palette_size);
-#endif
-
-void vte_terminal_set_default_colors(VteTerminal *terminal);
+void vte_terminal_set_scroll_on_keystroke(VteTerminal *terminal, gboolean scroll);
 
 /* Background effects. */
 void vte_terminal_set_background_image(VteTerminal *terminal, GdkPixbuf *image);
-void vte_terminal_set_background_image_file(VteTerminal *terminal,
-					    const char *path);
-void vte_terminal_set_background_tint_color(VteTerminal *terminal,
-					    const GdkColor *color);
-void vte_terminal_set_background_saturation(VteTerminal *terminal,
-					    double saturation);
-void vte_terminal_set_background_transparent(VteTerminal *terminal,
-					     gboolean transparent);
+void vte_terminal_set_background_image_file(VteTerminal *terminal, const char *path);
+void vte_terminal_set_background_tint_color(VteTerminal *terminal, const GdkColor *color);
+void vte_terminal_set_background_saturation(VteTerminal *terminal, double saturation);
+void vte_terminal_set_background_transparent(VteTerminal *terminal, gboolean transparent);
 void vte_terminal_set_opacity(VteTerminal *terminal, guint16 opacity);
 
 /* Set whether or not the cursor blinks. */
-void vte_terminal_set_cursor_blink_mode(VteTerminal *terminal,
-					VteTerminalCursorBlinkMode mode);
+void vte_terminal_set_cursor_blink_mode(VteTerminal *terminal, VteTerminalCursorBlinkMode mode);
 VteTerminalCursorBlinkMode vte_terminal_get_cursor_blink_mode(VteTerminal *terminal);
 
 /* Set cursor shape */
-void vte_terminal_set_cursor_shape(VteTerminal *terminal,
-				   VteTerminalCursorShape shape);
+void vte_terminal_set_cursor_shape(VteTerminal *terminal, VteTerminalCursorShape shape);
 VteTerminalCursorShape vte_terminal_get_cursor_shape(VteTerminal *terminal);
 
 /* Set the number of scrollback lines, above or at an internal minimum. */
@@ -1278,6 +1229,15 @@ void _vte_keymap_key_add_key_modifiers(guint keyval,
 				       gboolean app_cursor_keys,
 				       char **normal,
 				       gssize *normal_length);
+
+
+/*
+	For 'which':
+		Foreground(Normally normal text) = 256, Background = 257, Bold = 258, Dim = 259, Highlight(Selected area) = 260, Cursor = 261
+*/
+void vte_terminal_set_color_V2(VteTerminal *this, int which, int red, int green, int blue);
+void vte_terminal_set_colors(VteTerminal *terminal, const GdkColor *foreground, const GdkColor *background, const GdkColor *palette, glong palette_size);
+void vte_terminal_set_default_colors(VteTerminal *terminal);
 
 #undef _VTE_SEAL
 #undef _VTE_DEPRECATED

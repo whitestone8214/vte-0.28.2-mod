@@ -8,18 +8,16 @@
 
 
 _versionVte="0.28.2"
-_editionVte="23"
+_editionVte="24"
 _destinationVte="packages/vte/${_versionVte}-${_editionVte}"
 
 if (test "$1" = "build"); then
-	#gcc $(pkg-config --cflags --libs gtk+-x11-2.0 gio-unix-2.0) -I. -Wno-deprecated-declarations -fPIC src/{reaper,ring,vte}.c -shared -o libvte.so || exit 1
 	gcc $(pkg-config --cflags --libs gtk+-x11-2.0 gio-unix-2.0) -I. -Wno-deprecated-declarations -fPIC src/vte.c -shared -o libvte.so || exit 1
 elif (test "$1" = "install"); then
 	$0 uninstall || exit 1
 	
 	mkdir -p $2/${_destinationVte}/{includes,assets/{pkgconfig,termcaps}} || exit 1
 	cp -f libvte.so $2/${_destinationVte}
-	#cp -f src/{pty,reaper,vte,vtepty,vteversion,vtedeprecated}.h $2/${_destinationVte}/includes
 	cp -f src/{reaper,vte,vtepty,vteversion,vtedeprecated}.h $2/${_destinationVte}/includes
 	cp -f termcaps/xterm $2/${_destinationVte}/assets/termcaps
 	cp -f vte-mod.pc $2/${_destinationVte}/assets/pkgconfig/vte.pc
@@ -27,7 +25,6 @@ elif (test "$1" = "link"); then
 	$0 unlink || exit 1
 	
 	mkdir -p /etc/termcaps || exit 1
-	#ln -sf $2/${_destinationVte}/{libvte.so,gnome-pty-helper} /lib
 	ln -sf $2/${_destinationVte}/libvte.so /lib
 	ln -sf $2/${_destinationVte}/includes /usr/include/vte
 	ln -sf $2/${_destinationVte}/assets/pkgconfig/vte.pc /lib/pkgconfig
