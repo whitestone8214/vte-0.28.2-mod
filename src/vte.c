@@ -32562,6 +32562,33 @@ _vte_regex_exec(struct _vte_regex *regex, const char *string,
 }
 
 
+void vte_terminal_set_font_V2(VteTerminal *this, char *font) {
+	g_return_if_fail(VTE_IS_TERMINAL(this));
+	
+	gtk_widget_ensure_style(&this->widget);
+	PangoFontDescription *_font = font ? pango_font_description_from_string(font) : NULL;
+	
+	GtkStyle *style = gtk_widget_get_style (&this->widget);
+	PangoFontDescription *desc = pango_font_description_copy (style->font_desc);
+		pango_font_description_set_family_static (desc, "monospace");
+		if (font) pango_font_description_merge (desc, _font, TRUE);
+		
+	VteTerminalPrivate *pvt = this->pvt;
+		
+	gboolean same_desc = pvt->fontdesc && pango_font_description_equal(pvt->fontdesc, desc);
+	
+	g_object_freeze_notify((GObject *) this);
+		if (pvt->fontdesc != NULL) pango_font_description_free(pvt->fontdesc);
+		pvt->fontdesc = desc;
+		pvt->fontantialias = VTE_ANTI_ALIAS_FORCE_ENABLE; // VTE_ANTI_ALIAS_USE_DEFAULT?
+		pvt->fontdirty = TRUE;
+		pvt->has_fonts = TRUE;
+		
+		if (!same_desc) g_object_notify((GObject *) this, "font-desc");
+		
+		if (gtk_widget_get_realized (&this->widget)) vte_terminal_ensure_font (this);
+	g_object_thaw_notify((GObject *) this);
+}
 void vte_terminal_set_color_V2(VteTerminal *this, int which, int red, int green, int blue) {
 	if (this == NULL) return;
 	
