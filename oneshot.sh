@@ -8,7 +8,7 @@
 
 
 _versionVte="0.28.2"
-_editionVte="24"
+_editionVte="25"
 _destinationVte="packages/vte/${_versionVte}-${_editionVte}"
 
 if (test "$1" = "build"); then

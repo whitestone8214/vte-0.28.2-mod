@@ -133,7 +133,7 @@ typedef struct _VteTree VteTree;
 #define VTE_CUR_BG			261
 #define VTE_PALETTE_SIZE		262
 
-#define VTE_TAB_WIDTH			8
+#define VTE_TAB_WIDTH 4
 #define VTE_LINE_WIDTH			1
 #define VTE_ROWS			24
 #define VTE_COLUMNS			80
